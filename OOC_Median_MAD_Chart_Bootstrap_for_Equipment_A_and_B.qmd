@@ -1,0 +1,1220 @@
+---
+title: "Median-MAD charts for Equipment A and B"
+
+format:
+  pdf:
+    pdf-engine: xelatex
+    keep-tex: true
+    extra_dependencies: ["float"]
+    geometry:
+      - left=2.5cm
+      - right=2.5cm
+      - top=2.5cm
+      - bottom=2.5cm
+    include-in-header:
+      text: |
+        \usepackage{float}
+        \usepackage{placeins}
+        \usepackage[left]{lineno}
+        \linenumbers
+        \modulolinenumbers[1]
+
+number-sections: true
+mainfont: "Times New Roman"
+fontsize: 12pt
+
+bibliography: references.bib
+csl: vancouver.csl
+cite-method: citeproc
+link-citations: true
+linkcolor: blue
+
+editor:
+  markdown:
+    wrap: 72
+---
+
+
+```{r readdata}
+#| echo: FALSE
+#| message: false
+#| warning: false
+
+setwd("C:/Users/xyang1/CV Research Paper/stability paper/paper_univariate")
+file="C:/Users/xyang1/CV Research Paper/stability paper/paper_univariate/Equipment_A1.xlsx"
+file1="C:/Users/xyang1/CV Research Paper/stability paper/paper_univariate/Equipment_B1.xlsx"
+```
+
+```{r }
+#| label: median-mad-bootstrap
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-align: center
+
+# ============================================================
+# Conventional Bootstrap Median-MAD Control Charts
+# Each Excel workbook must contain three worksheets:
+#   DAR
+#   CAR
+#   Mic
+#
+# Each worksheet must contain:
+#   Event
+#   Result
+#
+# For each worksheet:
+#   Top panel    = Median chart
+#   Bottom panel = MAD chart
+#
+# All events in each worksheet are used for bootstrap
+# calibration. No Phase I or Phase II separation is used.
+#
+# Each chart has its own bootstrap CL and UCL.
+# No LCL is calculated.
+# Only points above the UCL are classified as OOC.
+# ============================================================
+
+
+# ============================================================
+# 1. Packages
+# ============================================================
+
+required_packages <- c(
+  "readxl",
+  "dplyr",
+  "ggplot2",
+  "patchwork"
+)
+
+missing_packages <- required_packages[
+  !vapply(
+    required_packages,
+    requireNamespace,
+    quietly = TRUE,
+    FUN.VALUE = logical(1)
+  )
+]
+
+if (length(missing_packages) > 0) {
+  stop(
+    paste0(
+      "Install the following packages before rendering: ",
+      paste(missing_packages, collapse = ", ")
+    )
+  )
+}
+
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(patchwork)
+
+
+# ============================================================
+# 2. median_mad() function
+# ============================================================
+
+median_mad <- function(
+    file,
+    equipment_name,
+    sheets = c("DAR", "CAR", "Mic"),
+    event_col = "Event",
+    result_col = "Result",
+    B = 10000,
+    alpha = 0.0027,
+    seed = 2026,
+    max_x_labels = 15
+) {
+
+  # ----------------------------------------------------------
+  # 2.1 Input checks
+  # ----------------------------------------------------------
+
+  if (!file.exists(file)) {
+    stop(
+      paste0(
+        "Excel file not found: ",
+        file
+      )
+    )
+  }
+
+  if (B < 1000) {
+    warning(
+      "B is less than 1000. At least 10000 replicates are recommended."
+    )
+  }
+
+  if (alpha <= 0 || alpha >= 1) {
+    stop("alpha must be between 0 and 1.")
+  }
+
+  if (max_x_labels < 2) {
+    stop("max_x_labels must be at least 2.")
+  }
+
+
+  # ----------------------------------------------------------
+  # 2.2 Normalize worksheet and column names
+  # ----------------------------------------------------------
+
+  normalize_text <- function(x) {
+
+    x <- as.character(x)
+    x <- gsub("[^A-Za-z0-9]", "", x)
+    x <- tolower(x)
+
+    x
+  }
+
+
+  # ----------------------------------------------------------
+  # 2.3 Find a worksheet
+  # ----------------------------------------------------------
+
+  find_sheet <- function(requested_sheet) {
+
+    available_sheets <- readxl::excel_sheets(file)
+
+    matched_position <- which(
+      normalize_text(available_sheets) ==
+        normalize_text(requested_sheet)
+    )
+
+    if (length(matched_position) == 0) {
+      stop(
+        paste0(
+          "Worksheet '",
+          requested_sheet,
+          "' was not found in ",
+          basename(file),
+          ". Available worksheets: ",
+          paste(available_sheets, collapse = ", ")
+        )
+      )
+    }
+
+    available_sheets[matched_position[1]]
+  }
+
+
+  # ----------------------------------------------------------
+  # 2.4 Find a column
+  # ----------------------------------------------------------
+
+  find_column <- function(data, requested_column) {
+
+    available_columns <- names(data)
+
+    matched_position <- which(
+      normalize_text(available_columns) ==
+        normalize_text(requested_column)
+    )
+
+    if (length(matched_position) == 0) {
+      stop(
+        paste0(
+          "Column '",
+          requested_column,
+          "' was not found. Available columns: ",
+          paste(available_columns, collapse = ", ")
+        )
+      )
+    }
+
+    available_columns[matched_position[1]]
+  }
+
+
+  # ----------------------------------------------------------
+  # 2.5 Read one worksheet
+  # ----------------------------------------------------------
+
+  read_sheet_data <- function(sheet_name) {
+
+    actual_sheet <- find_sheet(
+      requested_sheet = sheet_name
+    )
+
+    raw_data <- readxl::read_excel(
+      path = file,
+      sheet = actual_sheet
+    )
+
+    if (nrow(raw_data) == 0) {
+      stop(
+        paste0(
+          "Worksheet '",
+          actual_sheet,
+          "' in ",
+          basename(file),
+          " is empty."
+        )
+      )
+    }
+
+    actual_event_column <- find_column(
+      data = raw_data,
+      requested_column = event_col
+    )
+
+    actual_result_column <- find_column(
+      data = raw_data,
+      requested_column = result_col
+    )
+
+    standardized_data <- raw_data %>%
+      transmute(
+        Equipment = equipment_name,
+        Residue_Type = sheet_name,
+        Event = trimws(
+          as.character(
+            .data[[actual_event_column]]
+          )
+        ),
+        Result = suppressWarnings(
+          as.numeric(
+            .data[[actual_result_column]]
+          )
+        )
+      ) %>%
+      filter(
+        !is.na(Event),
+        Event != "",
+        is.finite(Result)
+      )
+
+    if (nrow(standardized_data) == 0) {
+      stop(
+        paste0(
+          "No usable numerical results were found in worksheet '",
+          actual_sheet,
+          "' of ",
+          basename(file),
+          "."
+        )
+      )
+    }
+
+    standardized_data
+  }
+
+
+  # ----------------------------------------------------------
+  # 2.6 Calculate event-level median and MAD
+  #
+  # MAD is unscaled:
+  # median(abs(x - median(x)))
+  # ----------------------------------------------------------
+
+  calculate_event_statistics <- function(data) {
+
+    event_order <- unique(data$Event)
+
+    event_statistics <- data %>%
+      mutate(
+        Event = factor(
+          Event,
+          levels = event_order
+        )
+      ) %>%
+      group_by(
+        Equipment,
+        Residue_Type,
+        Event
+      ) %>%
+      summarise(
+        n = sum(
+          is.finite(Result)
+        ),
+        Median = median(
+          Result,
+          na.rm = TRUE
+        ),
+        MAD = median(
+          abs(
+            Result -
+              median(Result, na.rm = TRUE)
+          ),
+          na.rm = TRUE
+        ),
+        .groups = "drop"
+      ) %>%
+      arrange(Event) %>%
+      mutate(
+        Event = as.character(Event),
+        Event_Index = row_number()
+      )
+
+    event_statistics
+  }
+
+
+  # ----------------------------------------------------------
+  # 2.7 Calculate bootstrap CLs and UCLs
+  #
+  # All observations in the current worksheet are pooled.
+  #
+  # A separate bootstrap distribution is generated for every
+  # cleaning-event sample size n observed in the worksheet.
+  # ----------------------------------------------------------
+
+  calculate_bootstrap_limits <- function(
+      data,
+      sheet_seed
+  ) {
+
+    pooled_values <- data$Result
+
+    pooled_values <- pooled_values[
+      is.finite(pooled_values)
+    ]
+
+    if (length(pooled_values) < 2) {
+      stop(
+        paste0(
+          equipment_name,
+          ": at least two finite observations are required."
+        )
+      )
+    }
+
+    event_statistics <- calculate_event_statistics(
+      data = data
+    )
+
+    sample_sizes <- sort(
+      unique(event_statistics$n)
+    )
+
+    set.seed(sheet_seed)
+
+    limit_list <- lapply(
+      sample_sizes,
+      function(current_n) {
+
+        bootstrap_statistics <- replicate(
+          B,
+          {
+            bootstrap_sample <- sample(
+              pooled_values,
+              size = current_n,
+              replace = TRUE
+            )
+
+            bootstrap_median <- median(
+              bootstrap_sample,
+              na.rm = TRUE
+            )
+
+            bootstrap_mad <- median(
+              abs(
+                bootstrap_sample -
+                  bootstrap_median
+              ),
+              na.rm = TRUE
+            )
+
+            c(
+              Median = bootstrap_median,
+              MAD = bootstrap_mad
+            )
+          }
+        )
+
+        data.frame(
+          n = current_n,
+
+          Median_CL = median(
+            bootstrap_statistics["Median", ],
+            na.rm = TRUE
+          ),
+
+          Median_UCL = unname(
+            quantile(
+              bootstrap_statistics["Median", ],
+              probs = 1 - alpha,
+              type = 8,
+              na.rm = TRUE
+            )
+          ),
+
+          MAD_CL = median(
+            bootstrap_statistics["MAD", ],
+            na.rm = TRUE
+          ),
+
+          MAD_UCL = unname(
+            quantile(
+              bootstrap_statistics["MAD", ],
+              probs = 1 - alpha,
+              type = 8,
+              na.rm = TRUE
+            )
+          )
+        )
+      }
+    )
+
+    bootstrap_limits <- dplyr::bind_rows(
+      limit_list
+    )
+
+    bootstrap_limits
+  }
+
+
+  # ----------------------------------------------------------
+  # 2.8 Prepare chart data and identify OOC events
+  # ----------------------------------------------------------
+
+  prepare_chart_data <- function(
+      data,
+      sheet_seed
+  ) {
+
+    event_statistics <- calculate_event_statistics(
+      data = data
+    )
+
+    bootstrap_limits <- calculate_bootstrap_limits(
+      data = data,
+      sheet_seed = sheet_seed
+    )
+
+    chart_data <- event_statistics %>%
+      left_join(
+        bootstrap_limits,
+        by = "n"
+      ) %>%
+      mutate(
+        Median_Status = if_else(
+          Median > Median_UCL,
+          "OOC",
+          "In Control"
+        ),
+
+        MAD_Status = if_else(
+          MAD > MAD_UCL,
+          "OOC",
+          "In Control"
+        ),
+
+        Median_Amount_Above_UCL =
+          Median - Median_UCL,
+
+        MAD_Amount_Above_UCL =
+          MAD - MAD_UCL
+      )
+
+    missing_limits <- (
+      any(is.na(chart_data$Median_CL)) ||
+        any(is.na(chart_data$Median_UCL)) ||
+        any(is.na(chart_data$MAD_CL)) ||
+        any(is.na(chart_data$MAD_UCL))
+    )
+
+    if (missing_limits) {
+      stop(
+        paste0(
+          equipment_name,
+          ": at least one event could not be matched ",
+          "to its bootstrap control limits."
+        )
+      )
+    }
+
+    list(
+      Chart_Data = chart_data,
+      Bootstrap_Limits = bootstrap_limits
+    )
+  }
+
+
+  # ----------------------------------------------------------
+  # 2.9 Select readable x-axis labels
+  #
+  # All cleaning events remain in the chart.
+  # Only selected event names are printed.
+  # ----------------------------------------------------------
+
+  get_x_axis <- function(chart_data) {
+
+    number_of_events <- nrow(chart_data)
+
+    if (number_of_events == 0) {
+      stop("No cleaning events are available for plotting.")
+    }
+
+    if (number_of_events <= max_x_labels) {
+
+      break_positions <- chart_data$Event_Index
+
+    } else {
+
+      break_positions <- unique(
+        round(
+          seq(
+            from = 1,
+            to = number_of_events,
+            length.out = max_x_labels
+          )
+        )
+      )
+    }
+
+    matched_positions <- match(
+      break_positions,
+      chart_data$Event_Index
+    )
+
+    break_labels <- chart_data$Event[
+      matched_positions
+    ]
+
+    list(
+      breaks = break_positions,
+      labels = break_labels
+    )
+  }
+
+
+  # ----------------------------------------------------------
+  # 2.10 Create median chart
+  # ----------------------------------------------------------
+
+  create_median_chart <- function(
+      chart_data,
+      residue_type
+  ) {
+
+    x_axis <- get_x_axis(
+      chart_data = chart_data
+    )
+
+    median_chart <- ggplot(
+      chart_data,
+      aes(
+        x = Event_Index,
+        y = Median
+      )
+    ) +
+      geom_line(
+        color = "black",
+        linewidth = 0.40
+      ) +
+      geom_point(
+        aes(color = Median_Status),
+        size = 2.5
+      ) +
+      geom_line(
+        aes(y = Median_CL),
+        color = "darkgreen",
+        linewidth = 0.75
+      ) +
+      geom_line(
+        aes(y = Median_UCL),
+        color = "red",
+        linewidth = 0.80,
+        linetype = "dashed"
+      ) +
+      scale_color_manual(
+        values = c(
+          "In Control" = "black",
+          "OOC" = "red"
+        ),
+        drop = FALSE
+      ) +
+      scale_x_continuous(
+        breaks = x_axis$breaks,
+        labels = x_axis$labels,
+        expand = expansion(
+          mult = c(0.01, 0.02)
+        )
+      ) +
+      labs(
+        title = paste0(
+          equipment_name,
+          ": ",
+          residue_type,
+          " Median Chart"
+        ),
+        x = NULL,
+        y = "Median",
+        color = NULL
+      ) +
+      theme_bw() +
+      theme(
+        legend.position = "none",
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(
+          face = "bold",
+          size = 12
+        ),
+        axis.title.y = element_text(
+          size = 11
+        ),
+        axis.text.y = element_text(
+          size = 9
+        ),
+        plot.margin = margin(
+          t = 5,
+          r = 10,
+          b = 2,
+          l = 5
+        )
+      )
+
+    median_chart
+  }
+
+
+  # ----------------------------------------------------------
+  # 2.11 Create MAD chart
+  # ----------------------------------------------------------
+
+  create_mad_chart <- function(
+      chart_data,
+      residue_type
+  ) {
+
+    x_axis <- get_x_axis(
+      chart_data = chart_data
+    )
+
+    mad_chart <- ggplot(
+      chart_data,
+      aes(
+        x = Event_Index,
+        y = MAD
+      )
+    ) +
+      geom_line(
+        color = "black",
+        linewidth = 0.40
+      ) +
+      geom_point(
+        aes(color = MAD_Status),
+        size = 2.5
+      ) +
+      geom_line(
+        aes(y = MAD_CL),
+        color = "darkgreen",
+        linewidth = 0.75
+      ) +
+      geom_line(
+        aes(y = MAD_UCL),
+        color = "red",
+        linewidth = 0.80,
+        linetype = "dashed"
+      ) +
+      scale_color_manual(
+        values = c(
+          "In Control" = "black",
+          "OOC" = "red"
+        ),
+        drop = FALSE
+      ) +
+      scale_x_continuous(
+        breaks = x_axis$breaks,
+        labels = x_axis$labels,
+        expand = expansion(
+          mult = c(0.01, 0.02)
+        ),
+        guide = guide_axis(
+          angle = 45,
+          check.overlap = TRUE
+        )
+      ) +
+      labs(
+        title = paste0(
+          equipment_name,
+          ": ",
+          residue_type,
+          " MAD Chart"
+        ),
+        x = "Cleaning Event",
+        y = "MAD",
+        color = NULL
+      ) +
+      theme_bw() +
+      theme(
+        legend.position = "none",
+        axis.text.x = element_text(
+          size = 8
+        ),
+        axis.text.y = element_text(
+          size = 9
+        ),
+        axis.title.x = element_text(
+          size = 11,
+          margin = margin(t = 10)
+        ),
+        axis.title.y = element_text(
+          size = 11
+        ),
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(
+          face = "bold",
+          size = 12
+        ),
+        plot.margin = margin(
+          t = 2,
+          r = 10,
+          b = 5,
+          l = 5
+        )
+      )
+
+    mad_chart
+  }
+
+
+  # ----------------------------------------------------------
+  # 2.12 Create OOC-event lists
+  # ----------------------------------------------------------
+
+  create_ooc_lists <- function(
+      chart_data,
+      residue_type
+  ) {
+
+    median_ooc <- chart_data %>%
+      filter(
+        Median_Status == "OOC"
+      ) %>%
+      transmute(
+        Equipment = equipment_name,
+        Residue_Type = residue_type,
+        Chart = "Median",
+        Event_Index,
+        Event,
+        n,
+        Statistic = Median,
+        CL = Median_CL,
+        UCL = Median_UCL,
+        Amount_Above_UCL =
+          Median_Amount_Above_UCL
+      )
+
+    mad_ooc <- chart_data %>%
+      filter(
+        MAD_Status == "OOC"
+      ) %>%
+      transmute(
+        Equipment = equipment_name,
+        Residue_Type = residue_type,
+        Chart = "MAD",
+        Event_Index,
+        Event,
+        n,
+        Statistic = MAD,
+        CL = MAD_CL,
+        UCL = MAD_UCL,
+        Amount_Above_UCL =
+          MAD_Amount_Above_UCL
+      )
+
+    chart_specific_ooc <- bind_rows(
+      median_ooc,
+      mad_ooc
+    ) %>%
+      arrange(
+        Event_Index,
+        Chart
+      )
+
+    unique_ooc <- chart_data %>%
+      filter(
+        Median_Status == "OOC" |
+          MAD_Status == "OOC"
+      ) %>%
+      transmute(
+        Equipment = equipment_name,
+        Residue_Type = residue_type,
+        Event_Index,
+        Event,
+        n,
+
+        Median,
+        Median_CL,
+        Median_UCL,
+        Median_OOC =
+          Median_Status == "OOC",
+
+        MAD,
+        MAD_CL,
+        MAD_UCL,
+        MAD_OOC =
+          MAD_Status == "OOC",
+
+        OOC_Chart = case_when(
+          Median_Status == "OOC" &
+            MAD_Status == "OOC" ~
+            "Median and MAD",
+
+          Median_Status == "OOC" ~
+            "Median",
+
+          MAD_Status == "OOC" ~
+            "MAD",
+
+          TRUE ~ NA_character_
+        )
+      ) %>%
+      arrange(Event_Index)
+
+    ooc_summary <- data.frame(
+      Equipment = equipment_name,
+      Residue_Type = residue_type,
+
+      Number_of_Events =
+        nrow(chart_data),
+
+      Median_OOC_Events = sum(
+        chart_data$Median_Status == "OOC",
+        na.rm = TRUE
+      ),
+
+      MAD_OOC_Events = sum(
+        chart_data$MAD_Status == "OOC",
+        na.rm = TRUE
+      ),
+
+      Unique_OOC_Events = sum(
+        chart_data$Median_Status == "OOC" |
+          chart_data$MAD_Status == "OOC",
+        na.rm = TRUE
+      )
+    )
+
+    list(
+      Median_OOC = median_ooc,
+      MAD_OOC = mad_ooc,
+      Chart_Specific_OOC = chart_specific_ooc,
+      Unique_OOC = unique_ooc,
+      OOC_Summary = ooc_summary
+    )
+  }
+
+
+  # ----------------------------------------------------------
+  # 2.13 Analyze DAR, CAR, and Mic
+  # ----------------------------------------------------------
+
+  results <- list()
+
+  for (sheet_number in seq_along(sheets)) {
+
+    sheet_name <- sheets[sheet_number]
+
+    sheet_data <- read_sheet_data(
+      sheet_name = sheet_name
+    )
+
+    sheet_seed <- seed + sheet_number
+
+    analysis <- prepare_chart_data(
+      data = sheet_data,
+      sheet_seed = sheet_seed
+    )
+
+    chart_data <- analysis$Chart_Data
+
+    median_chart <- create_median_chart(
+      chart_data = chart_data,
+      residue_type = sheet_name
+    )
+
+    mad_chart <- create_mad_chart(
+      chart_data = chart_data,
+      residue_type = sheet_name
+    )
+
+    combined_chart <- median_chart / mad_chart +
+      patchwork::plot_layout(
+        heights = c(1, 1)
+      )
+
+    ooc_lists <- create_ooc_lists(
+      chart_data = chart_data,
+      residue_type = sheet_name
+    )
+
+    results[[sheet_name]] <- list(
+      Chart = combined_chart,
+
+      Chart_Data =
+        chart_data,
+
+      Bootstrap_Limits =
+        analysis$Bootstrap_Limits,
+
+      Median_OOC =
+        ooc_lists$Median_OOC,
+
+      MAD_OOC =
+        ooc_lists$MAD_OOC,
+
+      Chart_Specific_OOC =
+        ooc_lists$Chart_Specific_OOC,
+
+      Unique_OOC =
+        ooc_lists$Unique_OOC,
+
+      OOC_Summary =
+        ooc_lists$OOC_Summary
+    )
+  }
+
+
+  # ----------------------------------------------------------
+  # 2.14 Combine OOC results for the equipment
+  # ----------------------------------------------------------
+
+  all_ooc_summary <- bind_rows(
+    lapply(
+      sheets,
+      function(sheet_name) {
+        results[[sheet_name]]$OOC_Summary
+      }
+    )
+  )
+
+  all_unique_ooc <- bind_rows(
+    lapply(
+      sheets,
+      function(sheet_name) {
+        results[[sheet_name]]$Unique_OOC
+      }
+    )
+  ) %>%
+    arrange(
+      Residue_Type,
+      Event_Index
+    )
+
+  all_chart_specific_ooc <- bind_rows(
+    lapply(
+      sheets,
+      function(sheet_name) {
+        results[[sheet_name]]$Chart_Specific_OOC
+      }
+    )
+  ) %>%
+    arrange(
+      Residue_Type,
+      Event_Index,
+      Chart
+    )
+
+  all_bootstrap_limits <- bind_rows(
+    lapply(
+      sheets,
+      function(sheet_name) {
+
+        results[[sheet_name]]$Bootstrap_Limits %>%
+          mutate(
+            Equipment = equipment_name,
+            Residue_Type = sheet_name,
+            .before = 1
+          )
+      }
+    )
+  )
+
+
+  # ----------------------------------------------------------
+  # 2.15 Return results
+  # ----------------------------------------------------------
+
+  list(
+    Equipment = equipment_name,
+
+    DAR = results[["DAR"]],
+
+    CAR = results[["CAR"]],
+
+    Mic = results[["Mic"]],
+
+    OOC_Summary =
+      all_ooc_summary,
+
+    Unique_OOC_Events =
+      all_unique_ooc,
+
+    Chart_Specific_OOC =
+      all_chart_specific_ooc,
+
+    Bootstrap_Limits =
+      all_bootstrap_limits
+  )
+}
+
+
+# ============================================================
+# 3. Run median_mad() for Equipment A using file
+# ============================================================
+
+equipment_A_results <- median_mad(
+  file = file,
+  equipment_name = "Equipment A",
+  sheets = c("DAR", "CAR", "Mic"),
+  event_col = "Event",
+  result_col = "Result",
+  B = 10000,
+  alpha = 0.0027,
+  seed = 2026,
+  max_x_labels = 15
+)
+
+
+# ============================================================
+# 4. Output Equipment A: three pairs of charts
+# ============================================================
+
+print(
+  equipment_A_results$DAR$Chart
+)
+
+print(
+  equipment_A_results$CAR$Chart
+)
+
+print(
+  equipment_A_results$Mic$Chart
+)
+
+
+# ============================================================
+# 5. Output Equipment A: OOC summary and event list
+# ============================================================
+
+cat(
+  "\n",
+  "============================================\n",
+  "EQUIPMENT A: OOC COUNT SUMMARY\n",
+  "============================================\n",
+  sep = ""
+)
+
+print(
+  as.data.frame(
+    equipment_A_results$OOC_Summary
+  ),
+  row.names = FALSE
+)
+
+cat(
+  "\n",
+  "============================================\n",
+  "EQUIPMENT A: OOC CLEANING EVENTS\n",
+  "============================================\n",
+  sep = ""
+)
+
+if (
+  nrow(
+    equipment_A_results$Unique_OOC_Events
+  ) == 0
+) {
+
+  cat(
+    "No OOC cleaning events were identified.\n"
+  )
+
+} else {
+
+  print(
+    as.data.frame(
+      equipment_A_results$Unique_OOC_Events
+    ),
+    row.names = FALSE
+  )
+}
+
+
+# ============================================================
+# 6. Run median_mad() for Equipment B using file1
+# ============================================================
+
+equipment_B_results <- median_mad(
+  file = file1,
+  equipment_name = "Equipment B",
+  sheets = c("DAR", "CAR", "Mic"),
+  event_col = "Event",
+  result_col = "Result",
+  B = 10000,
+  alpha = 0.0027,
+  seed = 2026,
+  max_x_labels = 15
+)
+
+
+# ============================================================
+# 7. Output Equipment B: three pairs of charts
+# ============================================================
+
+print(
+  equipment_B_results$DAR$Chart
+)
+
+print(
+  equipment_B_results$CAR$Chart
+)
+
+print(
+  equipment_B_results$Mic$Chart
+)
+
+
+# ============================================================
+# 8. Output Equipment B: OOC summary and event list
+# ============================================================
+
+cat(
+  "\n",
+  "============================================\n",
+  "EQUIPMENT B: OOC COUNT SUMMARY\n",
+  "============================================\n",
+  sep = ""
+)
+
+print(
+  as.data.frame(
+    equipment_B_results$OOC_Summary
+  ),
+  row.names = FALSE
+)
+
+cat(
+  "\n",
+  "============================================\n",
+  "EQUIPMENT B: OOC CLEANING EVENTS\n",
+  "============================================\n",
+  sep = ""
+)
+
+if (
+  nrow(
+    equipment_B_results$Unique_OOC_Events
+  ) == 0
+) {
+
+  cat(
+    "No OOC cleaning events were identified.\n"
+  )
+
+} else {
+
+  print(
+    as.data.frame(
+      equipment_B_results$Unique_OOC_Events
+    ),
+    row.names = FALSE
+  )
+}
+```
