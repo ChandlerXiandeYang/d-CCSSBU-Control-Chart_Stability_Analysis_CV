@@ -4,7 +4,7 @@ Motivation:
 
 Contribution:
 
-We designed d-heterogeneity index CV data median-MAD charts by cluster-calibrated-stratified-smoothed-bootstrap method. The introducing of ordered cluster  and d-heterogeneity index are the innovation part which solved ND events being OOC problem and provide the stability analysis tool for cleaning process validaiton.
+We designed d-heterogeneity index CV data median-MAD charts by cluster-calibrated-stratified-smoothed-bootstrap method which is distribution-free. The introducing of ordered cluster  and d-heterogeneity index is the innovation part which solved ND events being OOC problem and provide the stability analysis tool for cleaning process validaiton.
 
 # d-CCSSBU-L, d-CCSSBU-S, and Poisson $u$ Chart Code and Output for Equipment A and B
 
