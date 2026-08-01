@@ -1,6 +1,16 @@
+Motivation:
+1) Numerous best quality non-detectable cleaning events were tagged as OOC by X-bar chart or median-chart (bootstrap derived). 
+2) Practioners replace ND by worst LOD/LOQ conveniently with the logic that if the worst case shows the cleaning process stable and capable, then the other imputation of ND would also stable and capable. This is regulatory authorities expectation.
+
+Contribution:
+
+We designed d-heterogeneity index CV data median-MAD charts by cluster-calibrated-stratified-smoothed-bootstrap method. The introducing of ordered cluster  and d-heterogeneity index are the innovation part which solved ND events being OOC problem and provide the stability analysis tool for cleaning process validaiton.
+
 # d-CCSSBU-L, d-CCSSBU-S, and Poisson $u$ Chart Code and Output for Equipment A and B
 
 This repository contains the Quarto file `d_ccssbu_l_and_s_charts_and_poisson_u_chart_code_and_output_EqAB.qmd`, which provides the functions, analyses, and outputs used to construct the d-CCSSBU-L and d-CCSSBU-S charts, select the heterogeneity index $d$, and illustrate the Poisson $u$ chart for microbial bioburden (Mic) data from Equipment A and B.
+
+
 
 ## How to Use the Quarto File
 
