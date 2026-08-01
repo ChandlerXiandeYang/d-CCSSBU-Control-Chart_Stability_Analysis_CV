@@ -1,6 +1,6 @@
 Motivation:
 1) Numerous best quality non-detectable cleaning events were tagged as OOC by X-bar chart or median-chart (bootstrap derived). 
-2) Practioners replace ND by worst LOD/LOQ conveniently with the logic that if the worst case shows the cleaning process stable and capable, then the other imputation of ND would also stable and capable. This is regulatory authorities expectation.
+2) Practioners replace ND by worst LOD/LOQ conveniently with the logic that if the worst case shows the cleaning process stable and capable, then the other imputation of ND would also stable and capable. This is regulatory authorities' expectation.
 
 Contribution:
 
