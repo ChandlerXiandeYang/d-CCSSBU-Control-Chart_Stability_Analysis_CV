@@ -1,0 +1,463 @@
+% Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  12pt,
+  letterpaper,
+  DIV=11,
+  numbers=noendperiod]{scrartcl}
+\usepackage{xcolor}
+\usepackage[left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+  \setmainfont[]{Times New Roman}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+% Make \paragraph and \subparagraph free-standing
+\makeatletter
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\makeatother
+
+
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+
+
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  % set entry spacing
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+
+
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+ 
+
+
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{placeins}
+\usepackage[left]{lineno}
+\linenumbers
+\modulolinenumbers[1]
+\KOMAoption{captions}{tableheading}
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Table of contents}
+\else
+  \newcommand\contentsname{Table of contents}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{List of Figures}
+\else
+  \newcommand\listfigurename{List of Figures}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{List of Tables}
+\else
+  \newcommand\listtablename{List of Tables}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figure}
+\else
+  \newcommand\figurename{Figure}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Table}
+\else
+  \newcommand\tablename{Table}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={d-CCSSBU-L Chart Code and Its Output for Equipment A and B},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+
+\title{d-CCSSBU-L Chart Code and Its Output for Equipment A and B}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+
+\floatplacement{table}{H}
+\floatplacement{figure}{H}
+
+\section{Read Excel Data}\label{read-excel-data}
+
+Each Excel Data contains three spreadsheet: DAR, CAR, and Mic. Each
+spreadsheet should have varaibles Event, Location, Result, USL, LOD, LOQ
+(For Mic, it does not have LOD and LOQ).
+
+\section{d-CCSSBU-L Function}\label{d-ccssbu-l-function}
+
+The function \texttt{d\_ccssbu\_l()} uses Excel data as above to
+generate D-CCSSBU-L chart.
+
+\section{\texorpdfstring{Selection of \(d\) for d-CCSSBU-L
+Function}{Selection of d for d-CCSSBU-L Function}}\label{selection-of-d-for-d-ccssbu-l-function}
+
+\begin{itemize}
+\item
+  \texttt{d\_ccssbu\_l()} constructs the d-CCSSBU-L chart for a
+  specified value of \(d\).
+\item
+  \texttt{d\_ccssbu\_l\_d\_selection\_arl1()} applies
+  \texttt{d\_ccssbu\_l()} across all candidate values \(d=1,\ldots,q\)
+  using Excel input data and summarizes OOC counts and ARL\(_1\)
+  performance for DAR, CAR, and Mic residue types.
+\item
+  \texttt{make\_d\_ccssbu\_l\_arl1\_wide\_tbl()} converts the output of
+  \texttt{d\_ccssbu\_l\_d\_selection\_arl1()} into a wide-format summary
+  table.
+\item
+  \texttt{render\_d\_ccssbu\_l\_arl1\_tbl()} renders the output table
+  from \texttt{make\_d\_ccssbu\_l\_arl1\_wide\_tbl()} as a responsive
+  tibble that automatically adjusts to page width.
+\item
+  \texttt{render\_d\_ccssbu\_l\_recommendation\_tbl()} generates the
+  recommended \(d\) selection table for each residue type (DAR, CAR, and
+  Mic).
+\end{itemize}
+
+\section{Application of the functions to Equipment A and
+B.}\label{application-of-the-functions-to-equipment-a-and-b.}
+
+\subsection{\texorpdfstring{d-CCSSBU-L Selection of \(d\) and ARL1
+Results for Equipment
+A}{d-CCSSBU-L Selection of d and ARL1 Results for Equipment A}}\label{d-ccssbu-l-selection-of-d-and-arl1-results-for-equipment-a}
+
+Applying the \texttt{d\_ccssbu\_l\_d\_selection\_arl1()} function in
+{[}\citeproc{ref-Yang2026dccssbu}{1}{]} to Equipment A data produces a
+list of candidate values of \(d\) for each residue type. For a given
+residue type (e.g., DAR), the output contains \(q\) rows, where \(q\) is
+the number of ordered clusters identified.
+
+For each candidate value of \(d\), the first \(d\) clusters are selected
+to form the calibration dataset containing \texttt{nCal} cleaning
+events. The calibration dataset is then used in the stratified smoothed
+bootstrap procedure to estimate the chart UCL.
+
+For the resulting UCL, the numbers of OOC events among ND events
+(\texttt{OOC\_ND}), Stage 3A events (\texttt{OOC\_3A}), and Stage 3B
+events (\texttt{OOC\_3B}) are reported. An
+\texttt{OOC\_ND\ \textgreater{}\ 0} indicates that at least one ND event
+is identified as OOC. Because ND events represent the best-quality
+cleaning events, such a result suggests that the calibration dataset may
+not be representative of the IC process. Similarly,
+\texttt{OOC\_3A\ \textgreater{}\ 0} may indicate that the selected
+calibration dataset does not adequately represent an IC Stage 3A
+process.
+
+For comparison with conventional control charts, the sampling-location
+size associated with each cleaning event is recorded, and the median
+value is used as the benchmark subgroup size. This benchmark subgroup
+size is used to construct the conventional \(\bar{X}\) chart and \(S\)
+chart and to calculate the corresponding benchmark \(\bar{X}\)-chart
+ARL\(_1\) values reported in the table.
+
+Finally, the d-CCSSBU-L chart ARL\(_1\) values are calculated for a
+range of shift magnitudes. For the d-CCSSBU-L chart, the shift size is
+defined as \(\delta_k = k \times \mathrm{UCL}/3\), where \(k\) denotes
+the shift multiplier. The benchmark \(\bar{X}\)-chart ARL\(_1\) values
+are provided for comparison with the proposed chart.
+
+\begin{table}[!h]
+\centering
+\caption{\label{tab:display-d-selection-arl1-l-equipment-a-wide-v7}d-CCSSBU-L ARL1 simulation results for Equipment A. For each d, the d-CCSSBU-L chart was fitted using the location-specific calibration algorithm. ARL1 was estimated by shifting the bootstrap location statistics using delta k(d) equal to k times UCLboot(d) divided by 3.}
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\fontsize{7}{9}\selectfont
+\begin{tabular}[t]{lrrlrrrrrrrrrrrrr}
+\toprule
+Residue & d & q & case\_label & nCal & OOC\_ND & OOC\_3A & OOC\_3B & benchmark\_n & Xbar\_chart\_ARL1\_k\_0p5 & UCL & ARL1\_k\_0p5 & ARL1\_k\_1 & ARL1\_k\_1p5 & ARL1\_k\_2 & ARL1\_k\_2p5 & ARL1\_k\_3\\
+\midrule
+CAR & 1 & 1 & Case 1 & 10 & 0 & 0 & 0 & 3 & 60.8923 & 4.1222 & 36.5631 & 36.5631 & 36.5631 & 35.9712 & 1.0000 & 1.0000\\
+DAR & 1 & 3 & Case 2 & 3 & 0 & 0 & 0 & 6 & 26.3658 & 3.9132 & 6.8097 & 3.7064 & 2.2026 & 1.4708 & 1.0641 & 1.0000\\
+DAR & 2 & 3 & Case 2 & 6 & 0 & 0 & 0 & 6 & 26.3658 & 4.5849 & 21.5285 & 7.2046 & 3.4764 & 2.0640 & 1.3702 & 1.0000\\
+DAR & 3 & 3 & Case 2 & 10 & 0 & 0 & 0 & 6 & 26.3658 & 4.0912 & 50.7614 & 28.9855 & 9.1996 & 5.8428 & 2.5445 & 1.0002\\
+Mic & 1 & 1 & Case 1 & 10 & 0 & 0 & 0 & 2 & 91.5158 & 2.0736 & 9.9751 & 9.9751 & 9.9751 & 9.9751 & 9.9751 & 1.2997\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\FloatBarrier
+
+The recommendation algorithm recommended CAR \(d\)=1, DAR \(d=2\) by
+Case 1 in Step 8 although it totally has 3 clusters, and Mic \(d=1\).
+
+\begin{table}[H]
+\centering
+\caption{\label{tab:display-d-selection-recommendation-l-equipment-a-v7}Recommended d values for the d-CCSSBU-L chart for Equipment A.}
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\fontsize{5}{7}\selectfont
+\begin{tabular}[t]{lrrrlllllllll}
+\toprule
+Residue & recommended\_d & q & Xbar\_chart\_ARL1\_k\_0p5 & D1\_values & D2\_values & D3\_values & D4\_values & selected\_case & selection\_rule & D\_star\_values & selection\_path & recommendation\_notes\\
+\midrule
+CAR & 1 & 1 & 60.8923 & 1 & 1 & 1 &  & Case 1 & max(D1 intersect D2 intersect D3) & 1 & Case 1: max(D1 intersect D2 intersect D3) & \\
+DAR & 2 & 3 & 26.3658 & 1, 2, 3 & 1, 2, 3 & 1, 2 & 3 & Case 1 & max(D1 intersect D2 intersect D3) & 1, 2 & Case 1: max(D1 intersect D2 intersect D3) & \\
+Mic & 1 & 1 & 91.5158 & 1 & 1 & 1 &  & Case 1 & max(D1 intersect D2 intersect D3) & 1 & Case 1: max(D1 intersect D2 intersect D3) & \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\FloatBarrier
+
+\subsection{\texorpdfstring{d-CCSSBU-L Selection of \(d\) and ARL1
+Results for Equipment
+B}{d-CCSSBU-L Selection of d and ARL1 Results for Equipment B}}\label{d-ccssbu-l-selection-of-d-and-arl1-results-for-equipment-b}
+
+The \texttt{d\_ccssbu\_l\_d\_selection\_arl1()} function was applied to
+the Equipment B data using the same procedure described for Equipment A.
+
+For CAR, the candidate solution with \(d=1\) produced OOC ND events
+(\texttt{OOC\_ND\ =\ 3}). Although all OOC observations were ND, the
+ordered-cluster algorithm identified two distinct groups of ND events,
+corresponding to relatively smaller and larger ND values. When only the
+first cluster was selected for calibration, the calibration dataset
+became dominated by the smaller ND values, resulting in an excessively
+small UCL. Consequently, several events containing larger ND values were
+identified as OOC.
+
+This result illustrates that a calibration dataset should be
+representative of the IC process, even when all observations are ND.
+Therefore, the candidate solution with \(d=1\) was not considered
+suitable or the calibration dataset is not representative.
+
+\begin{table}[!h]
+\centering
+\caption{\label{tab:display-d-selection-arl1-l-equipment-b-wide-v7}d-CCSSBU-L ARL1 simulation results for Equipment B. For each d, the d-CCSSBU-L chart was fitted using the location-specific calibration algorithm. ARL1 was estimated by shifting the bootstrap location statistics using delta k(d) equal to k times UCLboot(d) divided by 3.}
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\fontsize{7}{9}\selectfont
+\begin{tabular}[t]{lrrlrrrrrrrrrrrrr}
+\toprule
+Residue & d & q & case\_label & nCal & OOC\_ND & OOC\_3A & OOC\_3B & benchmark\_n & Xbar\_chart\_ARL1\_k\_0p5 & UCL & ARL1\_k\_0p5 & ARL1\_k\_1 & ARL1\_k\_1p5 & ARL1\_k\_2 & ARL1\_k\_2p5 & ARL1\_k\_3\\
+\midrule
+CAR & 1 & 2 & Case 4 & 10 & 3 & 3 & 6 & 3 & 60.8923 & 2.1310 & 1.0000 & 1.0000 & 1.0000 & 1.0000 & 1.0000 & 1.0000\\
+CAR & 2 & 2 & Case 4 & 20 & 0 & 0 & 0 & 3 & 60.8923 & 30.9387 & 500.0000 & 9.9701 & 6.3837 & 4.6083 & 3.5549 & 1.0000\\
+DAR & 1 & 26 & Case 4 & 10 & 0 & 0 & 0 & 5 & 33.4221 & 19.5308 & 1.0088 & 1.0088 & 1.0088 & 1.0088 & 1.0088 & 1.0000\\
+DAR & 2 & 26 & Case 5 & 13 & 0 & 0 & 0 & 5 & 33.4221 & 19.5454 & 1.2732 & 1.0051 & 1.0035 & 1.0032 & 1.0029 & 1.0000\\
+DAR & 3 & 26 & Case 5 & 23 & 0 & 0 & 0 & 5 & 33.4221 & 23.4040 & 17.0648 & 3.4626 & 2.0206 & 1.3437 & 1.0264 & 1.0008\\
+\addlinespace
+DAR & 4 & 26 & Case 5 & 29 & 0 & 0 & 0 & 5 & 33.4221 & 20.7417 & 6.8399 & 3.9131 & 2.9291 & 1.9916 & 1.0162 & 1.0000\\
+DAR & 5 & 26 & Case 5 & 39 & 0 & 0 & 0 & 5 & 33.4221 & 20.7252 & 19.0476 & 7.7942 & 4.6992 & 2.7941 & 1.1529 & 1.0004\\
+DAR & 6 & 26 & Case 5 & 49 & 0 & 0 & 0 & 5 & 33.4221 & 20.4053 & 31.4961 & 12.5156 & 7.5472 & 4.0875 & 1.3605 & 1.0014\\
+DAR & 7 & 26 & Case 5 & 59 & 0 & 0 & 0 & 5 & 33.4221 & 19.9548 & 44.0529 & 16.5289 & 11.4548 & 6.8236 & 1.7751 & 1.0003\\
+DAR & 8 & 26 & Case 5 & 69 & 0 & 0 & 0 & 5 & 33.4221 & 19.6397 & 64.7249 & 22.3714 & 17.2117 & 10.2564 & 2.4393 & 1.0001\\
+\addlinespace
+DAR & 9 & 26 & Case 5 & 79 & 0 & 0 & 0 & 5 & 33.4221 & 19.5022 & 90.4977 & 30.3030 & 24.8756 & 14.8478 & 3.2321 & 1.0000\\
+DAR & 10 & 26 & Case 5 & 89 & 12 & 9 & 0 & 5 & 33.4221 & 19.3354 & 133.3333 & 39.1389 & 34.5423 & 19.5122 & 4.2256 & 1.0001\\
+DAR & 11 & 26 & Case 5 & 99 & 12 & 9 & 0 & 5 & 33.4221 & 19.2718 & 198.0198 & 51.9481 & 46.8384 & 27.1739 & 5.3262 & 1.0001\\
+DAR & 12 & 26 & Case 5 & 109 & 12 & 9 & 0 & 5 & 33.4221 & 19.1111 & 312.5000 & 83.6820 & 76.3359 & 38.4615 & 8.2781 & 1.0009\\
+DAR & 13 & 26 & Case 5 & 117 & 12 & 9 & 0 & 5 & 33.4221 & 18.9497 & 434.7826 & 97.5610 & 91.3242 & 42.2833 & 9.5283 & 1.0014\\
+\addlinespace
+DAR & 14 & 26 & Case 5 & 124 & 12 & 9 & 0 & 5 & 33.4221 & 18.9689 & 500.0000 & 124.2236 & 118.3432 & 51.8135 & 10.8342 & 1.0010\\
+DAR & 15 & 26 & Case 5 & 126 & 12 & 9 & 0 & 5 & 33.4221 & 19.0971 & 434.7826 & 119.0476 & 109.2896 & 60.9756 & 11.7716 & 1.0012\\
+DAR & 16 & 26 & Case 5 & 136 & 12 & 9 & 0 & 5 & 33.4221 & 18.6654 & 666.6667 & 136.9863 & 135.1351 & 59.1716 & 13.7741 & 1.0011\\
+DAR & 17 & 26 & Case 5 & 140 & 12 & 9 & 0 & 5 & 33.4221 & 19.1061 & 500.0000 & 144.9275 & 139.8601 & 77.5194 & 15.3139 & 1.0008\\
+DAR & 18 & 26 & Case 5 & 150 & 12 & 9 & 0 & 5 & 33.4221 & 18.4172 & 666.6667 & 188.6792 & 186.9159 & 66.2252 & 17.0358 & 1.0013\\
+\addlinespace
+DAR & 19 & 26 & Case 5 & 156 & 12 & 9 & 0 & 5 & 33.4221 & 14.2788 & 206.1856 & 206.1856 & 186.9159 & 37.3832 & 9.2166 & 1.0019\\
+DAR & 20 & 26 & Case 5 & 162 & 12 & 9 & 0 & 5 & 33.4221 & 14.1476 & 210.5263 & 208.3333 & 194.1748 & 41.6667 & 10.6838 & 1.0023\\
+DAR & 21 & 26 & Case 5 & 165 & 12 & 9 & 0 & 5 & 33.4221 & 16.2715 & 307.6923 & 202.0202 & 190.4762 & 44.4444 & 15.5280 & 1.0030\\
+DAR & 22 & 26 & Case 5 & 175 & 15 & 10 & 0 & 5 & 33.4221 & 13.7396 & 289.8551 & 285.7143 & 263.1579 & 50.2513 & 10.9769 & 1.0036\\
+DAR & 23 & 26 & Case 5 & 185 & 15 & 10 & 0 & 5 & 33.4221 & 13.9869 & 289.8551 & 289.8551 & 277.7778 & 53.0504 & 12.5000 & 1.0038\\
+\addlinespace
+DAR & 24 & 26 & Case 5 & 190 & 15 & 10 & 0 & 5 & 33.4221 & 13.9279 & 307.6923 & 307.6923 & 289.8551 & 61.1621 & 14.0647 & 1.0000\\
+DAR & 25 & 26 & Case 5 & 199 & 15 & 10 & 0 & 5 & 33.4221 & 13.8748 & 317.4603 & 317.4603 & 307.6923 & 60.7903 & 14.7820 & 1.0000\\
+DAR & 26 & 26 & Case 5 & 206 & 15 & 10 & 0 & 5 & 33.4221 & 13.6825 & 434.7826 & 425.5319 & 400.0000 & 76.9231 & 16.0256 & 1.0091\\
+Mic & 1 & 1 & Case 4 & 10 & 0 & 0 & 0 & 3 & 60.8923 & 4.0806 & 28.6944 & 28.6944 & 28.6944 & 28.6944 & 28.6944 & 1.7109\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\FloatBarrier
+
+The following table summarizes the recommended values of \(d\) for
+Equipment B. For CAR and Mic, only one admissible candidate remained
+after applying the selection rules, resulting in recommended values of
+\(d=2\) and \(d=1\), respectively. For DAR, multiple admissible
+candidates were identified, and the selection procedure recommended
+\(d=6\), corresponding to the smallest ARL\(_1\) among the admissible
+candidates.
+
+\begin{table}[H]
+\centering
+\caption{\label{tab:display-d-selection-recommendation-l-equipment-b-v7}Recommended d values for the d-CCSSBU-L chart for Equipment B.}
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\fontsize{5}{7}\selectfont
+\begin{tabular}[t]{lrrrlllllllll}
+\toprule
+Residue & recommended\_d & q & Xbar\_chart\_ARL1\_k\_0p5 & D1\_values & D2\_values & D3\_values & D4\_values & selected\_case & selection\_rule & D\_star\_values & selection\_path & recommendation\_notes\\
+\midrule
+CAR & 2 & 2 & 60.8923 & 2 & 2 & 1 & 2 & Case 6 & min(D1 intersect D2 intersect D4) & 2 & Case 6: min(D1 intersect D2 intersect D4) & \\
+DAR & 6 & 26 & 33.4221 & 1, 2, 3, 4, 5, 6, 7, 8, 9 & 1, 2, 3, 4, 5, 6, 7, 8, 9 & 1, 2, 3, 4, 5, 6 & 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 & Case 1 & max(D1 intersect D2 intersect D3) & 1, 2, 3, 4, 5, 6 & Case 1: max(D1 intersect D2 intersect D3) & \\
+Mic & 1 & 1 & 60.8923 & 1 & 1 & 1 &  & Case 1 & max(D1 intersect D2 intersect D3) & 1 & Case 1: max(D1 intersect D2 intersect D3) & \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\FloatBarrier
+
+\protect\phantomsection\label{refs}
+\begin{CSLReferences}{0}{1}
+\bibitem[\citeproctext]{ref-Yang2026dccssbu}
+\CSLLeftMargin{1. }%
+\CSLRightInline{Yang CX. D-CCSSBU-l-or-s control chart for cleaning
+validation {[}Internet{]}. GitHub repository; 2026. Available from:
+\url{https://github.com/ChandlerXiandeYang/d-CCSSBU-L-or-S-Control-Chart}}
+
+\end{CSLReferences}
+
+
+
+
+\end{document}
