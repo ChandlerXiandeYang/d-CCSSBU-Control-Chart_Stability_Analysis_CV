@@ -1,3 +1,4 @@
+
 Motivation:
 1) Numerous best quality non-detectable cleaning events were tagged as OOC by X-bar chart or median-chart (bootstrap derived). 
 2) Practioners replace ND by worst LOD/LOQ conveniently with the logic that if the worst case shows the cleaning process stable and capable, then the other imputation of ND would also stable and capable. This is regulatory authorities' expectation.
@@ -14,7 +15,7 @@ This repository contains the Quarto file `multicluster_SPC_paper_code.qmd`, whic
 
 ## How to Use the Quarto File
 
-Open `d_ccssbu_l_and_s_charts_and_poisson_u_chart_code_and_output_EqAB.qmd` and search for the function name corresponding to the required analysis. The five main parts are listed below.
+Open `multicluster_SPC_paper_code.qmd` and search for the function name corresponding to the required analysis. The five main parts are listed below.
 
 ### 1. d-CCSSBU-L Chart Design Algorithm
 
@@ -97,6 +98,7 @@ prepare_mic_data()
 poisson_gof_test()
 poisson_overdispersion_test()
 poisson_mic_u_chart()
+poisson_mic_u_chart_exact()
 ```
 
 These functions provide the complete Poisson $u$ chart workflow:
@@ -104,7 +106,8 @@ These functions provide the complete Poisson $u$ chart workflow:
 - `prepare_mic_data()` prepares the Mic data for analysis.
 - `poisson_gof_test()` evaluates the goodness of fit of the Poisson distribution.
 - `poisson_overdispersion_test()` evaluates whether the Mic data exhibit overdispersion relative to the Poisson model.
-- `poisson_mic_u_chart()` constructs the Poisson $u$ chart using the prepared data and supporting diagnostic results.
+- `poisson_mic_u_chart()` constructs the three-sigma Poisson $u$ chart using the prepared data and supporting diagnostic results.
+- `poisson_mic_u_chart_exact()` constructs the quantile Poisson $u$ chart (or call it exact Poisson $u$ chart) using the 0.99865-quantile to estimate the UCL.
 
 The Poisson assumptions should be evaluated before interpreting the resulting $u$ chart.
 
@@ -114,7 +117,7 @@ The Poisson assumptions should be evaluated before interpreting the resulting $u
 2. Use `d_ccssbu_l()` or `d_ccssbu_s()` to inspect a chart constructed for a specified value of $d$.
 3. Use `d_ccssbu_l_d_selection_arl1()` or `d_ccssbu_s_d_selection_arl1()` to evaluate all candidate values of $d$ and select the optimized heterogeneity index.
 4. Use the corresponding `make_*` and `render_*` functions to generate the ARL$_1$ and recommendation tables.
-5. For Mic data evaluated under a Poisson model, prepare the data, assess goodness of fit and overdispersion, and then construct the Poisson $u$ chart.
+5. For Mic data evaluated under a Poisson model, prepare the data, assess goodness of fit and overdispersion, and then construct the Poisson $u$ chart by two methods.
 
 ## Residue Types
 
