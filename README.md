@@ -26,7 +26,7 @@ Search for:
 d_ccssbu_l()
 ```
 
-The `d_ccssbu_l()` function implements the d-CCSSBU-L chart design algorithm for a specified value of $d$. It constructs the location calibration dataset, performs the stratified smoothed bootstrap procedure, estimates the center line and upper control limit, and identifies location-chart OOC events.
+The `d_ccssbu_l()` function implements the d-CCSSBU-L chart design algorithm for a specified value of $d$. It constructs the location calibration dataset, performs the stratified smoothed bootstrap procedure, estimates the center line and upper control limit, and identifies location-chart OOC events. Warning: We used cluster_col="USL" instead of cluster_col="API" or "Molecule" because our data USL and API/Molecule have one to one correspondence and Molecules has alias.
 
 ### 2. Selection of $d$ for the d-CCSSBU-L Chart
 
