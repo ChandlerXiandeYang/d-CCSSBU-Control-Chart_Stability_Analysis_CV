@@ -9,14 +9,14 @@ We designed d-heterogeneity index CV data median-MAD charts by cluster-calibrate
 
 # d-CCSSBU-L, d-CCSSBU-S, and Poisson $u$ Chart Code and Output for Equipment A and B
 
-This repository contains the Quarto file `multicluster_SPC_paper_code.qmd`, which provides the functions, analyses, and outputs used to construct the d-CCSSBU-L and d-CCSSBU-S charts, select the heterogeneity index $d$, and illustrate the Poisson $u$ chart for microbial bioburden (Mic) data from Equipment A and B.
+This repository contains the Quarto file `Code for the paper multicluster spc.qmd`, which provides the functions, analyses, and outputs used to construct the d-CCSSBU-L and d-CCSSBU-S charts, select the heterogeneity index $d$, and illustrate the Poisson $u$ chart for microbial bioburden (Mic) data from Equipment A and B.
 **Do not use code in the folder `Code` and do not use the files in the folder `References` becasue they are old and unrelated to the research in the paper.**
 
 
 
 ## How to Use the Quarto File
 
-Open `multicluster_SPC_paper_code.qmd` and search for the function name corresponding to the required analysis. The five main parts are listed below.
+Open `Code for the paper multicluster spc.qmd` and search for the function name corresponding to the required analysis. The five main parts are listed below.
 
 ### 1. d-CCSSBU-L Chart Design Algorithm
 
