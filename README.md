@@ -7,6 +7,10 @@ Contribution:
 
 We designed d-heterogeneity index CV data median-MAD charts by cluster-calibrated-stratified-smoothed-bootstrap method which is distribution-free. The introducing of ordered cluster  and d-heterogeneity index is the innovation part which solved ND events being OOC problem and provide the stability analysis tool for cleaning process validaiton.
 
+Attention:
+
+The functions in Discussion part are time consuming because it conducts large amount of Monte Carlo simulations. Readers can comment that part to run the code. 
+
 # d-CCSSBU-L, d-CCSSBU-S, and Poisson $u$ Chart Code and Output for Equipment A and B
 
 This repository contains the Quarto file `Code for the paper multicluster spc.qmd`, which provides the functions, analyses, and outputs used to construct the d-CCSSBU-L and d-CCSSBU-S charts, select the heterogeneity index $d$, and illustrate the Poisson $u$ chart for microbial bioburden (Mic) data from Equipment A and B.
