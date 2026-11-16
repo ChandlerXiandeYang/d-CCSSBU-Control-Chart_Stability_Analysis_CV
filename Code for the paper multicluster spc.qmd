@@ -4289,21 +4289,12 @@ plot_d_ccssbu_l_arl1_curves <- function(
       ) +
       ggplot2::scale_linetype_manual(
         name = NULL,
-        values = c(
-          "Xbar-chart ARL1 benchmark" = "longdash"
-        )
+        values = c("Xbar-chart ARL1 benchmark" = "longdash")
       ) +
       ggplot2::labs(
-        title = paste0(
-          residue_name,
-          " ARL1 curves"
-        ),
-        x = expression(
-          "Shift multiplier, " * rho
-        ),
-        y = expression(
-          ARL[1]
-        ),
+        title = paste0(residue_name," ARL1 curves"),
+        x = expression("Shift multiplier, " * rho),
+        y = expression(ARL[1]),
         color = "d-CCSSBU-L candidate"
       ) +
       ggplot2::theme_bw(
@@ -4339,9 +4330,7 @@ plot_d_ccssbu_l_arl1_curves <- function(
     make_residue_plot
   )
 
-  names(
-    residue_plots
-  ) <- residue_order
+  names(residue_plots ) <- residue_order
 
   combined_plot <- patchwork::wrap_plots(
     residue_plots,
@@ -4370,9 +4359,7 @@ plot_d_ccssbu_l_arl1_curves <- function(
         )
       )
     ) &
-    ggplot2::theme(
-      legend.position = "right"
-    )
+    ggplot2::theme(legend.position = "right")
 
   # ==========================================================
   # Construct the output filename
@@ -4380,59 +4367,25 @@ plot_d_ccssbu_l_arl1_curves <- function(
 
   if (is.null(output_file)) {
 
-    equipment_file_name <- tolower(
-      trimws(
-        equipment_label
-      )
-    )
+    equipment_file_name <- tolower(trimws(equipment_label))
 
-    equipment_file_name <- gsub(
-      pattern = "[^a-z0-9]+",
-      replacement = "-",
-      x = equipment_file_name
-    )
+    equipment_file_name <- gsub(pattern = "[^a-z0-9]+", replacement = "-",x = equipment_file_name)
 
-    equipment_file_name <- gsub(
-      pattern = "^-+|-+$",
-      replacement = "",
-      x = equipment_file_name
-    )
+    equipment_file_name <- gsub(pattern = "^-+|-+$",replacement = "",x = equipment_file_name)
 
-    output_file <- paste0(
-      "d-ccssbu-l-arl1-curves-",
-      equipment_file_name,
-      ".png"
-    )
+    output_file <- paste0("d-ccssbu-l-arl1-curves-",equipment_file_name,".png")
   }
 
-  if (
-    length(output_file) != 1 ||
-    is.na(output_file) ||
-    !nzchar(trimws(output_file))
-  ) {
-    stop(
-      "output_file must be one nonempty character value."
-    )
-  }
+  if (length(output_file) != 1 ||is.na(output_file) ||!nzchar(trimws(output_file))) {
+    stop("output_file must be one nonempty character value.")}
 
-  if (
-    !grepl(
-      pattern = "\\.png$",
-      x = output_file,
-      ignore.case = TRUE
-    )
-  ) {
-    output_file <- paste0(
-      output_file,
-      ".png"
-    )
-  }
+    if (!grepl(pattern = "\\.(png|jpe?g)$",x = output_file,ignore.case = TRUE)){output_file <- paste0( output_file,".png") }
 
   # ==========================================================
   # Save the combined figure
   # ==========================================================
-
-  ggplot2::ggsave(
+   
+   ggplot2::ggsave(
     filename = output_file,
     plot = combined_plot,
     width = width,
@@ -4441,15 +4394,11 @@ plot_d_ccssbu_l_arl1_curves <- function(
     dpi = dpi,
     bg = "white"
   )
-
+  
   message(
     paste0(
       "The ARL1 curve figure was saved to: ",
-      normalizePath(
-        output_file,
-        winslash = "/",
-        mustWork = FALSE
-      )
+      normalizePath(output_file,winslash = "/", mustWork = FALSE)
     )
   )
 
